@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/chat_model.dart';
 
 class ChatBubble extends StatelessWidget {
-  final ChatMessage message;
+  final Message message;
 
   const ChatBubble({
     super.key,
@@ -12,43 +12,21 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment:
-          message.isDoctor ? Alignment.centerLeft : Alignment.centerRight,
+      alignment: message.isDoctor
+          ? Alignment.centerRight
+          : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
-          color: message.isDoctor ? Colors.grey[300] : Colors.blue[300],
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 3,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: message.isDoctor ? Colors.blue : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
         ),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.7,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              message.isDoctor ? 'Doctor' : 'Patient',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              message.message,
-              style: TextStyle(
-                color: message.isDoctor ? Colors.black : Colors.white,
-              ),
-            ),
-          ],
+        child: Text(
+          message.text,
+          style: TextStyle(
+            color: message.isDoctor ? Colors.white : Colors.black,
+          ),
         ),
       ),
     );

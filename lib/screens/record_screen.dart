@@ -22,6 +22,7 @@ class _RecordScreenState extends State<RecordScreen> {
   String _currentText = '';
   List<String> _recordedTexts = [];
   bool _isInitialized = false;
+  final chatService = ChatService();
 
   @override
   void initState() {
@@ -122,29 +123,32 @@ class _RecordScreenState extends State<RecordScreen> {
         await apiService.analyzeConversation(textToAnalyze, _startWithDoctor);
 
     // Create a new chat with the analysis result
-    final service = ChatService();
-    final newId = service.getNextId();
-
     final newChat = Chat(
-      id: newId,
+      id: 0, // Will be set by the server
       startWithDoctor: _startWithDoctor,
       text: textToAnalyze,
       riskScore: result['riskScore'],
-      memo: result['memo'] ?? '환자 번호: #${1000 + newId}',
+      memo: result['memo'] ?? '환자 번호: #${DateTime.now().millisecondsSinceEpoch}',
       createdAt: DateTime.now(),
     );
 
-    service.addChat(newChat);
-
-    // Navigate to result screen
-    Future.delayed(Duration.zero, () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResultScreen(chatId: newId),
-        ),
-      );
-    });
+    try {
+      final createdChat = await chatService.createChat(newChat);
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultScreen(chatId: createdChat.id),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving chat: $e')),
+        );
+      }
+    }
   }
 
   String _formatDuration(Duration duration) {

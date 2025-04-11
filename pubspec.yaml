@@ -44,7 +44,7 @@ dependencies:
   # State management (to be used in the future)
   provider: ^6.0.5
   # Speech to text conversion
-  speech_to_text: ^6.5.1
+  speech_to_text: ^6.6.0
   # HTTP requests for API
   http: ^1.1.0
 

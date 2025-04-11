@@ -14,137 +14,108 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   Chat? chat;
+  bool isLoading = true;
+  String? error;
 
   @override
   void initState() {
     super.initState();
-    chat = ChatService().getChatById(widget.chatId);
+    _loadChat();
+  }
+
+  Future<void> _loadChat() async {
+    try {
+      final chatService = ChatService();
+      final loadedChat = await chatService.getChat(widget.chatId);
+      setState(() {
+        chat = loadedChat;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (chat == null) {
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (error != null) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('대화 결과'),
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-        ),
-        body: const Center(
-          child: Text('대화를 찾을 수 없습니다.'),
+        appBar: AppBar(title: const Text('Error')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Error: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadChat,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
         ),
       );
     }
 
+    if (chat == null) {
+      return const Scaffold(
+        body: Center(child: Text('Chat not found')),
+      );
+    }
+
+    final messages = chat!.getFormattedMessages();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('대화 #${chat!.id}'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
+        title: const Text('Conversation Details'),
       ),
       body: Column(
         children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: chat!.messages.length,
-              itemBuilder: (context, index) {
-                return ChatBubble(message: chat!.messages[index]);
-              },
-            ),
-          ),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
+            color: Colors.grey[200],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '분석 결과',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return Row(
-                              children: [
-                                Container(
-                                  width: constraints.maxWidth *
-                                      chat!.riskScore /
-                                      100,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: _getRiskColor(chat!.riskScore),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Text(
-                      '${chat!.riskScore}/100',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 Text(
-                  '위험도: ${chat!.riskLabel}',
-                  style: TextStyle(
+                  'Risk Level: ${chat!.getRiskLabel()} (${chat!.riskScore}/100)',
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: _getRiskColor(chat!.riskScore),
-                    fontSize: 16,
                   ),
                 ),
                 if (chat!.memo.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text(
-                    '메모: ${chat!.memo}',
-                    style: const TextStyle(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
+                  Text('Memo: ${chat!.memo}'),
                 ],
+                const SizedBox(height: 8),
+                Text(
+                  'Created: ${chat!.createdAt.year}/${chat!.createdAt.month}/${chat!.createdAt.day}',
+                  style: const TextStyle(fontSize: 12),
+                ),
               ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ChatBubble(message: messages[index]);
+              },
             ),
           ),
         ],
       ),
     );
-  }
-
-  Color _getRiskColor(int score) {
-    if (score < 25) return Colors.green;
-    if (score < 50) return Colors.yellow[700]!;
-    if (score < 75) return Colors.orange;
-    return Colors.red;
   }
 }

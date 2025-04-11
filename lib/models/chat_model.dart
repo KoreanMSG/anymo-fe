@@ -11,41 +11,59 @@ class Chat {
     required this.startWithDoctor,
     required this.text,
     required this.riskScore,
-    this.memo = '',
+    required this.memo,
     required this.createdAt,
   });
 
-  List<ChatMessage> get messages {
-    final messageTexts = text.split('@@');
-    final result = <ChatMessage>[];
-
-    for (int i = 0; i < messageTexts.length; i++) {
-      final isDoctor = startWithDoctor ? i % 2 == 0 : i % 2 == 1;
-      result.add(
-        ChatMessage(
-          isDoctor: isDoctor,
-          message: messageTexts[i],
-        ),
-      );
-    }
-
-    return result;
+  factory Chat.fromJson(Map<String, dynamic> json) {
+    return Chat(
+      id: json['id'],
+      startWithDoctor: json['startWithDoctor'],
+      text: json['text'],
+      riskScore: json['riskScore'],
+      memo: json['memo'] ?? '',
+      createdAt: DateTime.parse(json['createdAt']),
+    );
   }
 
-  String get riskLabel {
-    if (riskScore < 25) return 'Low Risk';
-    if (riskScore < 50) return 'Medium Risk';
-    if (riskScore < 75) return 'High Risk';
-    return 'Very High Risk';
+  Map<String, dynamic> toJson() {
+    return {
+      'startWithDoctor': startWithDoctor,
+      'text': text,
+      'riskScore': riskScore,
+      'memo': memo,
+    };
+  }
+
+  String getRiskLabel() {
+    if (riskScore >= 75) return "Very High Risk";
+    if (riskScore >= 50) return "High Risk";
+    if (riskScore >= 25) return "Medium Risk";
+    return "Low Risk";
+  }
+
+  List<String> getMessages() {
+    return text.split('@@');
+  }
+
+  List<Message> getFormattedMessages() {
+    final messages = getMessages();
+    return List.generate(messages.length, (index) {
+      final isDoctor = startWithDoctor ? index.isEven : index.isOdd;
+      return Message(
+        text: messages[index],
+        isDoctor: isDoctor,
+      );
+    });
   }
 }
 
-class ChatMessage {
+class Message {
+  final String text;
   final bool isDoctor;
-  final String message;
 
-  ChatMessage({
+  Message({
+    required this.text,
     required this.isDoctor,
-    required this.message,
   });
 }
