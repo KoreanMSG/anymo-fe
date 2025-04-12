@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="108" height="108" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="54" cy="54" r="54" fill="#2196F3"/>
+  
+  <!-- Chat Bubble -->
+  <path d="M34 25C34 22.7909 35.7909 21 38 21H70C72.2091 21 74 22.7909 74 25V67C74 69.2091 72.2091 71 70 71H54L34 89V25Z" fill="white"/>
+  
+  <!-- Medical Cross -->
+  <path d="M54 27V81M27 54H81" stroke="#2196F3" stroke-width="10" stroke-linecap="round"/>
+</svg> 

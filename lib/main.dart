@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'screens/home_screen.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Voice Recognition App',
+      title: 'Anymo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
