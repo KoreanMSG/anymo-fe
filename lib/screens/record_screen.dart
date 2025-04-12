@@ -97,7 +97,7 @@ class _RecordScreenState extends State<RecordScreen> {
           }
         });
       },
-      localeId: 'ko-KR', // Korean language
+      localeId: 'en-US', // Korean language
       listenMode: stt.ListenMode.confirmation,
       pauseFor: const Duration(seconds: 3),
     );
