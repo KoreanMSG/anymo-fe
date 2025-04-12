@@ -14,29 +14,27 @@ class ApiService {
 
   /// Analyze the conversation text and return risk score
   /// Text is already converted from speech to text before being sent
-  Future<Map<String, dynamic>> analyzeConversation(
-      String text, bool startWithDoctor) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/analyze'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'text': text,
-          'startWithDoctor': startWithDoctor,
-        }),
-      );
+Future<Map<String, dynamic>> analyzeConversation(String text) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/analyze'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'text': text,
+      }),
+    );
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        // If server returns error, return mock data for now
-        return _getMockAnalysisResult(text);
-      }
-    } catch (e) {
-      // If API call fails, return mock data for development
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      // If server returns error, return mock data for now
       return _getMockAnalysisResult(text);
     }
+  } catch (e) {
+    // If API call fails, return mock data for development
+    return _getMockAnalysisResult(text);
   }
+}
 
   // This is a mock function that simulates API response
   // Will be replaced with actual API call in production

@@ -110,17 +110,17 @@ class _RecordScreenState extends State<RecordScreen> {
     });
 
     // Combine all recorded texts
-    final fullText = _recordedTexts.join('@@');
+    final fullText = _recordedTexts.join(' ');
 
     // If empty, create a mock text
     final textToAnalyze = fullText.isEmpty
-        ? '안녕하세요, 상담에 오신 것을 환영합니다.@@안녕하세요, 최근에 스트레스가 심해서 왔어요.@@어떤 일로 스트레스를 받고 계신가요?@@회사 업무와 가정 문제로 계속 쌓이고 있어요.'
+        ? '안녕하세요, 상담에 오신 것을 환영합니다.안녕하세요, 최근에 스트레스가 심해서 왔어요.어떤 일로 스트레스를 받고 계신가요? 회사 업무와 가정 문제로 계속 쌓이고 있어요.'
         : fullText;
 
     // Send to API for analysis
     final apiService = ApiService();
     final result =
-        await apiService.analyzeConversation(textToAnalyze, _startWithDoctor);
+        await apiService.analyzeConversation(textToAnalyze);
 
     // Create a new chat with the analysis result
     final newChat = Chat(
