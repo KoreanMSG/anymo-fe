@@ -16,6 +16,7 @@ class _ResultScreenState extends State<ResultScreen> {
   Chat? chat;
   bool isLoading = true;
   String? error;
+  final chatService = ChatService();
 
   @override
   void initState() {
@@ -25,8 +26,13 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> _loadChat() async {
     try {
-      final chatService = ChatService();
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+
       final loadedChat = await chatService.getChat(widget.chatId);
+      
       setState(() {
         chat = loadedChat;
         isLoading = false;
