@@ -106,7 +106,7 @@ class _RecordScreenState extends State<RecordScreen> {
   Future<void> _processSpeechData() async {
     // Show loading indicator
     setState(() {
-      _currentText = '분석 중...';
+      _currentText = 'Analyzing...';
     });
 
     // Combine all recorded texts
@@ -114,21 +114,28 @@ class _RecordScreenState extends State<RecordScreen> {
 
     // If empty, create a mock text
     final textToAnalyze = fullText.isEmpty
-        ? '안녕하세요, 상담에 오신 것을 환영합니다.안녕하세요, 최근에 스트레스가 심해서 왔어요.어떤 일로 스트레스를 받고 계신가요? 회사 업무와 가정 문제로 계속 쌓이고 있어요.'
+        ? 'Hello, welcome to the consultation. Hello, I have been under a lot of stress lately. What has been causing you stress? It keeps building up with work and family issues.'
         : fullText;
 
-    // Send to API for analysis
+    // First send to processChat API to format with @@ markers
     final apiService = ApiService();
-    final result =
-        await apiService.analyzeConversation(textToAnalyze);
+    final processedChat = await apiService.processChat(textToAnalyze);
+
+    // Then send to analysis API using the processed text
+    final formattedText = processedChat['text'];
+    final startWithDoctorValue =
+        processedChat['startWithDoctor'] ?? _startWithDoctor;
+
+    final result = await apiService.analyzeConversation(formattedText);
 
     // Create a new chat with the analysis result
     final newChat = Chat(
       id: 0, // Will be set by the server
-      startWithDoctor: _startWithDoctor,
-      text: textToAnalyze,
+      startWithDoctor: startWithDoctorValue,
+      text: formattedText,
       riskScore: result['riskScore'],
-      memo: result['memo'] ?? '환자 번호: #${DateTime.now().millisecondsSinceEpoch}',
+      memo: result['memo'] ??
+          'Patient Number: #${DateTime.now().millisecondsSinceEpoch}',
       createdAt: DateTime.now(),
     );
 
@@ -162,7 +169,7 @@ class _RecordScreenState extends State<RecordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('음성 인식'),
+        title: const Text('Voice Recognition'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -185,7 +192,7 @@ class _RecordScreenState extends State<RecordScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    _isListening ? '듣는 중...' : '인식 시작하기',
+                    _isListening ? 'Listening...' : 'Start Recognition',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -225,10 +232,10 @@ class _RecordScreenState extends State<RecordScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('대화 시작: '),
+                const Text('Start with: '),
                 const SizedBox(width: 8),
                 ChoiceChip(
-                  label: const Text('의사'),
+                  label: const Text('Doctor'),
                   selected: _startWithDoctor,
                   onSelected: (selected) {
                     if (!_isListening) {
@@ -240,7 +247,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 ),
                 const SizedBox(width: 16),
                 ChoiceChip(
-                  label: const Text('환자'),
+                  label: const Text('Patient'),
                   selected: !_startWithDoctor,
                   onSelected: (selected) {
                     if (!_isListening) {
@@ -265,7 +272,7 @@ class _RecordScreenState extends State<RecordScreen> {
                 ),
               ),
               child: Text(
-                _isListening ? '인식 종료' : '인식 시작',
+                _isListening ? 'Stop Recording' : 'Start Recording',
                 style: const TextStyle(fontSize: 18),
               ),
             ),
@@ -273,7 +280,7 @@ class _RecordScreenState extends State<RecordScreen> {
               const Padding(
                 padding: EdgeInsets.only(top: 20),
                 child: Text(
-                  '음성 인식을 초기화하는 중...',
+                  'Initializing voice recognition...',
                   style: TextStyle(color: Colors.red),
                 ),
               ),

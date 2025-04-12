@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '음성인식 앱',
+      title: 'Voice Recognition App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.

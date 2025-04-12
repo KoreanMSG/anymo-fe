@@ -14,27 +14,71 @@ class ApiService {
 
   /// Analyze the conversation text and return risk score
   /// Text is already converted from speech to text before being sent
-Future<Map<String, dynamic>> analyzeConversation(String text) async {
-  try {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/analyze'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'text': text,
-      }),
-    );
+  Future<Map<String, dynamic>> analyzeConversation(String text) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/analyze'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'text': text,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      // If server returns error, return mock data for now
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        // If server returns error, return mock data for now
+        return _getMockAnalysisResult(text);
+      }
+    } catch (e) {
+      // If API call fails, return mock data for development
       return _getMockAnalysisResult(text);
     }
-  } catch (e) {
-    // If API call fails, return mock data for development
-    return _getMockAnalysisResult(text);
   }
-}
+
+  /// Process conversation text through backend to get formatted chat with @@ markers
+  Future<Map<String, dynamic>> processChat(String text) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://anymo-be.onrender.com/processChat'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'text': text,
+          'createdAt': DateTime.now().toIso8601String(),
+          'memo': '',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        // If server returns error, use mock data with @@ markers
+        return {
+          'text': _addMarkersToMockText(text),
+          'startWithDoctor': true,
+          'createdAt': DateTime.now().toIso8601String(),
+          'memo': '',
+        };
+      }
+    } catch (e) {
+      // If API call fails, use mock data with @@ markers
+      return {
+        'text': _addMarkersToMockText(text),
+        'startWithDoctor': true,
+        'createdAt': DateTime.now().toIso8601String(),
+        'memo': '',
+      };
+    }
+  }
+
+  // Helper method to add @@ markers to mock text
+  String _addMarkersToMockText(String text) {
+    // Simple implementation to split by sentences and add markers
+    final sentences = text.split(RegExp(r'(?<=[.!?])\s+'));
+    if (sentences.isEmpty) return text;
+
+    return sentences.join(' @@ ');
+  }
 
   // This is a mock function that simulates API response
   // Will be replaced with actual API call in production
